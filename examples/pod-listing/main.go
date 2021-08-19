@@ -54,4 +54,23 @@ func main() {
 		fmt.Printf("%s, %s\n", pod.Name, pod.Status.Phase)
 		fmt.Printf("		%v\n", pod.Status.ContainerStatuses)
 	}
+
+	// Examples for error handling:
+	// - Use helper functions like e.g. errors.IsNotFound()
+	// - And/or cast to StatusError and use its properties like e.g. ErrStatus.Message
+	/*
+	namespace := "default"
+	pod := "failed-pod"
+	_, err = clientSet.CoreV1().Pods(namespace).Get(context.TODO(), pod, metaV1.GetOptions{})
+	if errors.IsNotFound(err) {
+		fmt.Printf("Pod %s in namespace %s not found\n", pod, namespace)
+	} else if statusError, isStatus := err.(*errors.StatusError); isStatus {
+		fmt.Printf("Error getting pod %s in namespace %s: %v\n",
+			pod, namespace, statusError.ErrStatus.Message)
+	} else if err != nil {
+		panic(err.Error())
+	} else {
+		fmt.Printf("Found pod %s in namespace %s\n", pod, namespace)
+	}
+	*/
 }

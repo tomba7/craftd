@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: terminating-pod-two
+  labels:
+    app: intuit
+  namespace: default
+spec:
+  terminationGracePeriodSeconds: 50000
+  containers:
+  - name: main
+    image: busybox:1.28
+    command: [ "/bin/sh" ]
+    args:
+    - "-c"
+    - "sleep 99999"
+  - name: web
+    image: busybox:1.28
+    command: ["/bin/sh"]
+    args:
+    - "-c"
+    - "sleep 20; exit 1"

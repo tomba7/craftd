@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: failed-pod-two
+  labels:
+    app: intuit
+  namespace: default
+spec:
+  containers:
+  - name: main
+    image: busybox:1.28
+    command: ["/bin/sh"]
+    args:
+    - "-c"
+    - "exit 1"
+  - name: web
+    image: nginx

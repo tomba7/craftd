@@ -13,3 +13,4 @@ spec:
       args:
         - "-c"
         - "exit 0"
+  restartPolicy: Never
