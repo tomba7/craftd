@@ -2,10 +2,12 @@ package pods
 
 import (
 	"context"
+	"fmt"
 	v1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"strings"
+	"time"
 )
 
 type Status int
@@ -46,6 +48,7 @@ type Pod struct {
 	Name      string
 	Namespace string
 	Status    Status
+	Duration  string
 }
 
 type podLister struct {
@@ -65,17 +68,46 @@ func (p *podLister) get(namespace string, filters StatusFilters) []*Pod {
 		panic(err.Error())
 	}
 	if len(filters) != 0 {
-		podFilter := &podFilter{}
 		statusSpec := &statusSpecifier{filters: filters}
-		return podFilter.filter(podList, statusSpec)
+		timeSpec := &timeSpecifier{duration: (time.Minute * 60 * 9) + time.Minute * 52}
+		statusAndTimeSpec := &statusAndTimeSpecifier{
+			status: statusSpec, time: timeSpec,
+		}
+		return filter(podList, statusAndTimeSpec)
+	} else {
+		var result []*Pod
+		for _, pod := range podList.Items {
+			result = append(result, &Pod{
+				Name:      pod.Name,
+				Status:    status(&pod),
+				Namespace: pod.Namespace,
+				Duration:  timeSince(time.Since(pod.Status.StartTime.Time)),
+			})
+		}
+		return result
+	}
+}
+
+func filter(podList *v1.PodList, spec specifier) []*Pod {
+	set := make(map[string]*Pod)
+	key := func(pod *v1.Pod) string {
+		return fmt.Sprintf("%s,%s", pod.Namespace, pod.Name)
+	}
+	for _, pod := range podList.Items {
+		if spec.satisfies(&pod) {
+			if _, exist := set[key(&pod)]; !exist {
+				set[key(&pod)] = &Pod{
+					Name:      pod.Name,
+					Status:    status(&pod),
+					Namespace: pod.Namespace,
+					Duration: timeSince(time.Since(pod.Status.StartTime.Time)),
+				}
+			}
+		}
 	}
 	var result []*Pod
-	for _, pod := range podList.Items {
-		result = append(result, &Pod{
-			Name: pod.Name,
-			Status: status(&pod),
-			Namespace: pod.Namespace,
-		})
+	for _, pod := range set {
+		result = append(result, pod)
 	}
 	return result
 }
@@ -101,4 +133,12 @@ func status(pod *v1.Pod) Status {
 		}
 	}
 	return PodStatusRunning
+}
+
+func timeSince(duration time.Duration) string {
+	duration = duration.Round(time.Minute)
+	hours := duration / time.Hour
+	duration -= hours * time.Hour
+	minutes := duration / time.Minute
+	return fmt.Sprintf("%02d:%02d", hours, minutes)
 }

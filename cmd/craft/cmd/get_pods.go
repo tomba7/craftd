@@ -14,9 +14,9 @@ var getPodsCmd = &cobra.Command{
 	Short: "A brief description of your command",
 	Run: func(cmd *cobra.Command, args []string) {
 		filters := parseFilters()
-		fmt.Printf("%-20s %-20s %-20s\n", "NAMESPACE", "STATUS", "NAME")
+		fmt.Printf("%-20s %-20s %-10s %-20s\n", "NAMESPACE", "STATUS", "DURATION", "NAME")
 		for _, pod := range pods.Service.Get(filters) {
-			fmt.Printf("%-20s %-20s %-20s\n", pod.Namespace, pod.Status, pod.Name)
+			fmt.Printf("%-20s %-20s %-10s %-20s\n", pod.Namespace, pod.Status, pod.Duration, pod.Name)
 		}
 	},
 }
