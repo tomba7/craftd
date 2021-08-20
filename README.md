@@ -24,15 +24,25 @@ Containers:
 ```
 
 ### Completed
-Pod:
-  State: Succeeded
+Start Time:   Thu, 19 Aug 2021 12:43:59 -0700
+Status:       Succeeded
 Containers:
   main:
-    State: Terminated
-      Reason: Completed
+    State:          Terminated
+      Reason:       Completed
+      Exit Code:    0
+      Started:      Thu, 19 Aug 2021 12:44:00 -0700
+      Finished:     Thu, 19 Aug 2021 12:44:00 -0700
+    Ready:          False
+Conditions:
+  Type              Status
+  Initialized       True
+  Ready             False
+  ContainersReady   False
+  PodScheduled      True
 
 ### Failed
-#### Single Container Pod
+#### CrashLoopBackOff - Single Container Pod
 ```
 Status:       Running
 Start Time:   Wed, 18 Aug 2021 20:37:07 -0700
@@ -46,7 +56,7 @@ Containers:
       Started:      Thu, 19 Aug 2021 08:19:11 -0700
       Finished:     Thu, 19 Aug 2021 08:19:11 -0700
 ```
-#### Multi Containers
+#### CrashLoopBackOff - Multi Containers
 ```
 Start Time:   Thu, 19 Aug 2021 07:55:23 -0700
 Status:       Running
@@ -62,4 +72,20 @@ Container:
   web:
     State:          Running
       Started:      Thu, 19 Aug 2021 07:55:25 -0700
+```
+
+#### ImagePullBackOff
+```
+Start Time:   Thu, 19 Aug 2021 14:25:37 -0700
+Status:       Pending
+Containers:
+  main:
+    State:          Waiting
+      Reason:       ImagePullBackOff
+Conditions:
+  Type              Status
+  Initialized       True
+  Ready             False
+  ContainersReady   False
+  PodScheduled      True
 ```

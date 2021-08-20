@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: failed-bad-image
+  labels:
+    app: intuit
+  namespace: default
+spec:
+  restartPolicy: Never
+  containers:
+  - name: main
+    image: foobarand1
+    command: ["/bin/sh"]
+    args:
+    - "-c"
+    - "exit 1"
