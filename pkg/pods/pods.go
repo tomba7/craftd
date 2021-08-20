@@ -59,7 +59,7 @@ func newPodLister(clientSet kubernetes.Interface) *podLister {
 	return &podLister{clientSet: clientSet}
 }
 
-func (p *podLister) get(namespace string, filters StatusFilters) []*Pod {
+func (p *podLister) get(namespace string, filters StatusFilters, minutes *int) []*Pod {
 	podList, err := p.clientSet.
 		CoreV1().
 		Pods(namespace).
@@ -67,14 +67,32 @@ func (p *podLister) get(namespace string, filters StatusFilters) []*Pod {
 	if err != nil {
 		panic(err.Error())
 	}
+
+	var timeSpec *timeSpecifier
+	if minutes != nil {
+		timeSpec = &timeSpecifier{
+			duration: time.Minute * time.Duration(*minutes),
+		}
+	}
+
+	// Do we need to filter data?
 	if len(filters) != 0 {
 		statusSpec := &statusSpecifier{filters: filters}
-		timeSpec := &timeSpecifier{duration: (time.Minute * 60 * 9) + time.Minute * 52}
-		statusAndTimeSpec := &statusAndTimeSpecifier{
-			status: statusSpec, time: timeSpec,
+		if minutes != nil {
+			statusAndTimeSpec := &statusAndTimeSpecifier{
+				status: statusSpec, time: timeSpec,
+			}
+			// Filter both status and duration
+			return filter(podList, statusAndTimeSpec)
+		} else {
+			// Filter status only
+			return filter(podList, statusSpec)
 		}
-		return filter(podList, statusAndTimeSpec)
 	} else {
+		if minutes != nil {
+			// Filter by duration only
+			return filter(podList, timeSpec)
+		}
 		var result []*Pod
 		for _, pod := range podList.Items {
 			result = append(result, &Pod{
