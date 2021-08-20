@@ -10,6 +10,7 @@ var Service podsServiceInterface = &podsService{
 
 type podsServiceInterface interface {
 	Get(StatusFilters, *int) []*Pod
+	Delete(StatusFilters, *int) []*Pod
 }
 
 type podsService struct{
@@ -17,5 +18,9 @@ type podsService struct{
 }
 
 func (s *podsService) Get(filters StatusFilters, minutes *int) []*Pod {
+	return s.lister.get("default", filters, minutes)
+}
+
+func (s *podsService) Delete(filters StatusFilters, minutes *int) []*Pod {
 	return s.lister.get("default", filters, minutes)
 }

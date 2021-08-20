@@ -106,6 +106,13 @@ func (p *podLister) get(namespace string, filters StatusFilters, minutes *int) [
 	}
 }
 
+func (p *podLister) delete(namespace string, filters StatusFilters, minutes *int) []*Pod {
+	toBeDeleted := p.get(namespace, filters, minutes)
+	// TODO
+	// Delete pods here. Set grace period to 0 for --force delete
+	return toBeDeleted
+}
+
 func filter(podList *v1.PodList, spec specifier) []*Pod {
 	set := make(map[string]*Pod)
 	key := func(pod *v1.Pod) string {
