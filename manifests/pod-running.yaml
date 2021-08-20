@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: runnning-pod
+  labels:
+    app: intuit
+  namespace: default
+spec:
+  containers:
+    - name: main
+      image: busybox:1.28
+      command: [ "/bin/sh" ]
+      args:
+        - "-c"
+        - "tail -f /dev/null"

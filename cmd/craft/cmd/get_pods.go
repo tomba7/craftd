@@ -21,7 +21,7 @@ var getPodsCmd = &cobra.Command{
 	},
 }
 
-func parseFilters() pods.Filters {
+func parseFilters() pods.StatusFilters {
 	var filters []pods.Filter
 	filterFlags := []string{
 		pods.FilterCompletedString,

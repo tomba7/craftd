@@ -56,7 +56,7 @@ func newPodLister(clientSet kubernetes.Interface) *podLister {
 	return &podLister{clientSet: clientSet}
 }
 
-func (p *podLister) get(namespace string, filters Filters) []*Pod {
+func (p *podLister) get(namespace string, filters StatusFilters) []*Pod {
 	podList, err := p.clientSet.
 		CoreV1().
 		Pods(namespace).
@@ -65,7 +65,9 @@ func (p *podLister) get(namespace string, filters Filters) []*Pod {
 		panic(err.Error())
 	}
 	if len(filters) != 0 {
-		return filters.filter(podList)
+		podFilter := &podFilter{}
+		statusSpec := &statusSpecifier{filters: filters}
+		return podFilter.filter(podList, statusSpec)
 	}
 	var result []*Pod
 	for _, pod := range podList.Items {

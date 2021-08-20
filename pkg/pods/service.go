@@ -9,13 +9,13 @@ var Service podsServiceInterface = &podsService{
 }
 
 type podsServiceInterface interface {
-	Get(Filters) []*Pod
+	Get(StatusFilters) []*Pod
 }
 
 type podsService struct{
 	lister *podLister
 }
 
-func (s *podsService) Get(filters Filters) []*Pod {
+func (s *podsService) Get(filters StatusFilters) []*Pod {
 	return s.lister.get("default", filters)
 }

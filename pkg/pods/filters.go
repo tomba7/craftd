@@ -47,26 +47,68 @@ func ToFilter(filterString string) Filter {
 	}
 }
 
-type FilterSpecifier interface {
-	IsSatisfied(pod *v1.Pod) bool
+type Specifier interface {
+	Satisfies(pod *v1.Pod) bool
 }
 
-type Filters []Filter
+type StatusFilters []Filter
 
-func (f Filters) filter(podList *v1.PodList) []*Pod {
+var DefaultStatusFilters = map[Filter]Specifier{
+	FilterTerminating: &FilterTerminatingPods{},
+	FilterCompleted:   &FilterCompletedPods{},
+	FilterFailed:      &FilterFailedPods{},
+}
+
+// FilterTerminatingPods filters pods in terminating state
+type FilterTerminatingPods struct{}
+
+func (f *FilterTerminatingPods) Satisfies(pod *v1.Pod) bool {
+	return status(pod) == PodStatusTerminating
+}
+
+// FilterCompletedPods filters pods in completed state
+type FilterCompletedPods struct{}
+
+func (f *FilterCompletedPods) Satisfies(pod *v1.Pod) bool {
+	return status(pod) == PodStatusCompleted
+}
+
+// FilterFailedPods filters failed pods
+type FilterFailedPods struct{}
+
+func (f *FilterFailedPods) Satisfies(pod *v1.Pod) bool {
+	podStatus := status(pod)
+	return podStatus == PodStatusFailed || podStatus == PodStatusCrashLoopBackOff ||
+		podStatus == PodStatusImagePullBackOff
+}
+
+type podFilter struct{}
+
+type statusSpecifier struct {
+	filters StatusFilters
+}
+
+func (s *statusSpecifier) Satisfies(pod *v1.Pod) bool {
+	for _, filter := range s.filters {
+		if DefaultStatusFilters[filter].Satisfies(pod) {
+			return true
+		}
+	}
+	return false
+}
+
+func (f *podFilter) filter(podList *v1.PodList, spec Specifier) []*Pod {
 	set := make(map[string]*Pod)
 	key := func(pod *v1.Pod) string {
 		return fmt.Sprintf("%s,%s", pod.Namespace, pod.Name)
 	}
 	for _, pod := range podList.Items {
-		for _, filter := range f {
-			if DefaultFilters[filter].IsSatisfied(&pod) {
-				if _, exist := set[key(&pod)]; !exist {
-					set[key(&pod)] = &Pod{
-						Name:      pod.Name,
-						Status:    status(&pod),
-						Namespace: pod.Namespace,
-					}
+		if spec.Satisfies(&pod) {
+			if _, exist := set[key(&pod)]; !exist {
+				set[key(&pod)] = &Pod{
+					Name:      pod.Name,
+					Status:    status(&pod),
+					Namespace: pod.Namespace,
 				}
 			}
 		}
@@ -76,31 +118,4 @@ func (f Filters) filter(podList *v1.PodList) []*Pod {
 		result = append(result, pod)
 	}
 	return result
-}
-
-var DefaultFilters = map[Filter]FilterSpecifier{
-	FilterTerminating: &FilterTerminatingPods{},
-	FilterCompleted:   &FilterCompletedPods{},
-	FilterFailed:      &FilterFailedPods{},
-}
-
-type FilterTerminatingPods struct{}
-
-func (f *FilterTerminatingPods) IsSatisfied(pod *v1.Pod) bool {
-	return status(pod) == PodStatusTerminating
-}
-
-type FilterCompletedPods struct{}
-
-func (f *FilterCompletedPods) IsSatisfied(pod *v1.Pod) bool {
-	return status(pod) == PodStatusCompleted
-}
-
-type FilterFailedPods struct{}
-
-func (f *FilterFailedPods) IsSatisfied(pod *v1.Pod) bool {
-	podStatus := status(pod)
-	return podStatus == PodStatusFailed ||
-		podStatus == PodStatusCrashLoopBackOff ||
-		podStatus == PodStatusImagePullBackOff
 }
