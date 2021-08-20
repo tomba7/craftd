@@ -1,11 +1,15 @@
 package pods
 
-import (
-	"github.com/tomba7/craftd/pkg/client"
-)
+import "github.com/tomba7/craftd/pkg/client"
 
-var Service podsServiceInterface = &podsService{
-	lister: newPodLister(client.Client()),
+//var Service podsServiceInterface = &podsService{
+//	lister: newPodLister(client.NewClientSet()),
+//}
+
+func NewPodService() podsServiceInterface {
+	return	&podsService{
+		lister: newPodLister(client.NewClientSet()),
+	}
 }
 
 type podsServiceInterface interface {

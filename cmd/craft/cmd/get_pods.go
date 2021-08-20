@@ -16,7 +16,7 @@ var getPodsCmd = &cobra.Command{
 		filterList := filters.ParseFilters()
 		minutes := filters.ParseDuration()
 		fmt.Printf("%-20s %-20s %-10s %-20s\n", "NAMESPACE", "STATUS", "DURATION", "NAME")
-		for _, pod := range pods.Service.Get(filterList, minutes) {
+		for _, pod := range pods.NewPodService().Get(filterList, minutes) {
 			fmt.Printf("%-20s %-20s %-10s %-20s\n", pod.Namespace, pod.Status, pod.Duration, pod.Name)
 		}
 	},

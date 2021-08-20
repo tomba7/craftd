@@ -16,7 +16,7 @@ var deletePodsCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		filterList := filters.ParseFilters()
 		minutes := filters.ParseDuration()
-		for _, pod := range pods.Service.Delete(filterList, minutes) {
+		for _, pod := range pods.NewPodService().Delete(filterList, minutes) {
 			fmt.Println(pod.Name, "deleted successfully")
 		}
 	},

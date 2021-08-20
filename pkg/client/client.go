@@ -8,14 +8,15 @@ import (
 	"path/filepath"
 )
 
-var clientSet *kubernetes.Clientset
+var clientSet kubernetes.Interface
 
-func init() {
+func NewClientSet() kubernetes.Interface {
 	var kubeConfig *string
 	if home := homedir.HomeDir(); home != "" {
 		kubeConfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeConfig file")
 	} else {
 		kubeConfig = flag.String("kubeconfig", "", "absolute path to the kubeConfig file")
+		return nil
 	}
 	flag.Parse()
 
@@ -29,6 +30,7 @@ func init() {
 	if err != nil {
 		panic(err.Error())
 	}
+	return clientSet
 }
 
 func Client() kubernetes.Interface {

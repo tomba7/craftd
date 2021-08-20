@@ -1,6 +1,11 @@
 # craftd
 Craft Demo Project
 
+- Unit tests
+- Determine the time a pod has been in completed state (not start time)
+- How would you operationlize it on a prod cluster
+- how would you decrease the load on the Kube API server
+
 ## States
 
 ### Running
